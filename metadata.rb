@@ -5,7 +5,7 @@ license          'Apache-2.0'
 description      'Installs and configures Rundeck 2.x'
 version          '8.1.4'
 
-depends          'java'
+# depends          'java'
 depends          'apache2', '>= 9.0.0'
 
 %w(ubuntu centos fedora redhat scientific oracle).each do |os|
