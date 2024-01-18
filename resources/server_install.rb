@@ -329,9 +329,16 @@ action :install do
     end
   end
 
+  # Using the `systemd_unit` resource with `triggers_reload` still failed.
+  execute 'reload systemd services' do
+    command 'systemctl daemon-reload'
+    action :nothing
+  end
+
   service 'rundeckd' do
     action [:start, :enable]
     notifies :run, 'ruby_block[wait for rundeckd startup]', :immediately
+    notifies :run, 'execute[reload systemd services]', :before if get_init_system=='systemd'
   end
 
   ruby_block 'wait for rundeckd startup' do

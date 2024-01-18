@@ -1,4 +1,6 @@
-apt_update unless platform_family?('rhel', 'amazon', 'fedora')
+unless platform_family?('rhel', 'amazon', 'fedora')
+  apt_update
+end
 
 rundeck_server_install 'package' do
   acl_policies node['rundeck']['acl_policies']

@@ -43,5 +43,18 @@ module RundeckCookbook
       end
       cmd.stdout
     end
+
+    def get_init_system()
+      cmd_string = "stat /proc/1/exe | grep File: | awk '{print $NF}' | rev | cut -d/ -f1 | rev"
+
+      cmd = shell_out(cmd_string)
+
+      if cmd.exitstatus != 0
+        Chef::Log.fatal("stat failed executing this statement:\n#{cmd_string}")
+        Chef::Log.fatal(cmd.stderr)
+        raise 'STAT CLI ERROR'
+      end
+      cmd.stdout.chomp!
+    end
   end
 end
