@@ -50,9 +50,7 @@ action :install do
       only_if { platform_family?('rhel', 'fedora', 'amazon') }
     end
 
-    apache2_module 'ssl' do
-      notifies :reload, 'apache2_service[rundeck]'
-    end
+    apache2_module 'ssl'
 
     directory new_resource.cert_location do
       recursive true
@@ -60,19 +58,16 @@ action :install do
 
     file "#{new_resource.cert_location}/#{new_resource.cert_name}.crt" do
       content new_resource.cert_contents
-      notifies :restart, 'apache2_service[rundeck]'
       not_if { ::File.exist?("#{new_resource.cert_location}/#{new_resource.cert_name}") }
     end
 
     file "#{new_resource.cert_location}/#{new_resource.cert_name}.key" do
       content new_resource.key_contents
-      notifies :restart, 'apache2_service[rundeck]'
       action :create_if_missing
     end
 
     file "#{new_resource.cert_location}/#{new_resource.ca_cert_name}.crt" do
       content new_resource.ca_cert_contents
-      notifies :restart, 'apache2_service[rundeck]'
       not_if { new_resource.ca_cert_name.nil? }
       action :create_if_missing
     end
@@ -94,7 +89,6 @@ action :install do
   %w(default 000-default).each do |site|
     apache2_site site do
       action :disable
-      notifies :reload, 'apache2_service[rundeck]'
     end
   end
 
@@ -121,18 +115,32 @@ action :install do
     )
   end
 
-  apache2_site 'rundeck' do
-    notifies :reload, 'apache2_service[rundeck]'
-  end
+  apache2_site 'rundeck'
 
   apache2_service 'rundeck' do
     action [:enable, :start]
     subscribes :restart, 'apache2_install[nagios]'
-    subscribes :reload, 'apache2_module[deflate]'
-    subscribes :reload, 'apache2_module[headers]'
-    subscribes :reload, 'apache2_module[proxy]'
-    subscribes :reload, 'apache2_module[proxy_http]'
-    subscribes :reload, 'apache2_module[rewrite]'
+    subscribes :restart, "file[#{new_resource.cert_location}/#{new_resource.cert_name}.key]"
+    subscribes :restart, "file[#{new_resource.cert_location}/#{new_resource.cert_name}.crt]"
+    if platform?('debian') # prevent AH00534 on debian during reload
+      subscribes :restart, 'apache2_module[deflate]'
+      subscribes :restart, 'apache2_module[headers]'
+      subscribes :restart, 'apache2_module[proxy]'
+      subscribes :restart, 'apache2_module[proxy_http]'
+      subscribes :restart, 'apache2_module[rewrite]'
+      subscribes :restart, 'apache2_module[ssl]'
+    else
+      subscribes :reload, 'apache2_module[deflate]'
+      subscribes :reload, 'apache2_module[headers]'
+      subscribes :reload, 'apache2_module[proxy]'
+      subscribes :reload, 'apache2_module[proxy_http]'
+      subscribes :reload, 'apache2_module[rewrite]'
+      subscribes :reload, 'apache2_module[ssl]'
+    end
+    %w(default 000-default).each do |site|
+      subscribes :reload, "apache2_site[#{site}]"
+    end
+    subscribes :reload, 'apache2_site[rundeck]'
     subscribes :restart, 'service[rundeckd]', :immediately
   end
 end

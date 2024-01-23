@@ -11,6 +11,9 @@ provisioner:
   multiple_converge: 2
   deprecations_as_errors: true
   log_level: <%= ENV['CHEF_LOG_LEVEL'] || 'auto' %>
+  client_rb:
+    silence_deprecation_warnings:
+      - chef-33 # From dependant java cookbook
 
 verifier:
   name: inspec
@@ -22,12 +25,15 @@ platforms:
   - name: centos-stream-8
   - name: centos-stream-9
   - name: debian-10
+    provisioner:
+      product_version: 16 # glibc6 too new in v17
+      multiple_converge: 3 # `adoptopenjdk_install` takes 3 runs to fully converge
   - name: debian-11
+    provisioner:
+      product_version: 17 # glibc6 too new in v18
   - name: debian-12
   - name: fedora-latest
   - name: opensuse-leap-15
-  - name: oraclelinux-8
-  - name: oraclelinux-9
   - name: rockylinux-8
   - name: rockylinux-9
   - name: ubuntu-20.04

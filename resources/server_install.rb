@@ -335,10 +335,16 @@ action :install do
     action :nothing
   end
 
+  execute 'enable sysvinit service' do
+    command '/lib/systemd/systemd-sysv-install enable rundeckd'
+    action :nothing
+  end
+
   service 'rundeckd' do
     action [:start, :enable]
     notifies :run, 'ruby_block[wait for rundeckd startup]', :immediately
     notifies :run, 'execute[reload systemd services]', :before if get_init_system=='systemd'
+    notifies :run, 'execute[enable sysvinit service]', :before if platform_family?('debian') && node['platform_version'] > 10 # enable doesn't work with sysvinit under systemd
   end
 
   ruby_block 'wait for rundeckd startup' do

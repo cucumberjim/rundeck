@@ -1,12 +1,6 @@
-# describe service('rundeckd') do
-#   it { should be_installed }
-#   it { should be_enabled }
-#   it { should be_running }
-# end
-
-describe systemd_service('rundeckd') do
-  it { should_not be_enabled }
+describe service('rundeckd') do
   it { should be_installed }
+  it { should be_enabled }
   it { should be_running }
 end
 

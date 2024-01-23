@@ -19,6 +19,5 @@
 unified_mode true
 
 action :install do
-  package 'openjdk-8-jre-headless'
-  #   adoptopenjdk_install '8'
+  adoptopenjdk_install '8'
 end

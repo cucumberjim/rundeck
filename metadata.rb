@@ -2,13 +2,13 @@ name             'rundeck'
 maintainer       'Sous Chefs'
 maintainer_email 'help@sous-chefs.org'
 license          'Apache-2.0'
-description      'Installs and configures Rundeck 2.x'
-version          '8.1.4'
+description      'Installs and configures Rundeck'
+version          '9.0.0'
 
-# depends          'java'
+depends          'java', '< 12.0.2' # adoptopenjdk_linux_install commented out?
 depends          'apache2', '>= 9.0.0'
 
-%w(ubuntu centos fedora redhat scientific oracle).each do |os|
+%w(ubuntu centos fedora redhat scientific oracle rocky debian).each do |os|
   supports os
 end
 
